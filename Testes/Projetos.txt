@@ -1,0 +1,5 @@
+Iluminação
+Obs: Resistor de 100K foi usado.
+Link de Consulta: https://blog.zerokol.com/2018/01/ldr-sensor-de-luz-com-nodemcu.html
+Iluminacao1 - Primeiro teste com o ESP8266 e o LDR
+Iluminacao2 - Teste com LDR e acendimento de Led
