@@ -2,14 +2,23 @@
  Módulo iluminação
  Utilizando um Sensor de presença e fotoresistor através de interrupções
  envio de dados ao Broker MQTT
- canal de envio exterior/iluminacao (se 0 apagado, se 1 aceso)
+ Topicos
+ 1 - canal de envio automatico, feito pelo sensor de monimento: exterior/iluminacao - (se 0 apagado, se 1 aceso)
+ 2 - canal de envio manual da situacao do pino de acendimento da lampada: exterior/ligalampada (se {0} apagar a lampada, se {1} acender a lampada)
+
+ Topicos do projeto - No Debian
+ Manual Publicar Acendimento da lampada manual - mosquitto_pub -t exterior/ligalampada -m {"1"}
+ Manual Publicar Desligamento da lampada manual - mosquitto_pub -t exterior/ligalampada -m {"0"}
+ Manual Assinar situacao do acionamento da lampada manual - mosquitto_sub -h 192.168.18.40 -t exterior/ligalampada
+ Esp32 Assinar a situacao da lampada no momento - mosquitto_sub -h 192.168.18.40 -t exterior/iluminacao
+ 
 *********/
 //Inclusão das Bibliotecas
 #include <PubSubClient.h>
 #include <WiFi.h> 
 
-const char* ssid = "REDETESTE";
-const char* password = "REDETESTE";
+const char* ssid = "RDL2";
+const char* password = "Bobo31*A*B";
 const char* mqtt_server = "192.168.18.40"; //Broker local rodando em Debian - allow_anonymous true e listener 1883 0.0.0.0 
 const int   mqtt_port = 1883;
 
@@ -67,6 +76,8 @@ void setup() {
   pinMode(lampada, OUTPUT);
   digitalWrite(lampada, LOW);
 
+  //Inicializacao da funcao que fara o subscribe do topico acendimento manual
+  client.setCallback(callback);
 }
 
 //Funcao de conexao com a rede
@@ -91,6 +102,34 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
+//Funcao de recepcao de topico no ESP para ligar ou desligar a lampada de forma manual
+void callback(char* topic, byte* message, unsigned int length) {
+  Serial.print("Mensagem recebido no topico: ");
+  Serial.print(topic);
+  Serial.print(". Mensagem: ");
+  String ligarLampada;
+  
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)message[i]);
+    ligarLampada += (char)message[i];
+  }
+  Serial.println();
+ 
+  // Se uma mensagem for recebida no topico exterior/ligalampada, verifica-se se ela é {1} ou {0}
+  // Altera a saída de acordo com a mensagem
+  if (String(topic) == "exterior/ligalampada") {
+    Serial.print("Mudando saida para ");
+    if(ligarLampada == "{1}"){
+      Serial.println("ligado");
+      digitalWrite(lampada, HIGH);
+    }
+    else if(ligarLampada == "{0}"){
+      Serial.println("desligado");
+      digitalWrite(lampada, LOW);
+    }
+  }
+}
+
 //Funcao de conexao ao Broker MQTT
 void reconnect() {
   // Loop até que seja estabelecida a conexao
@@ -102,6 +141,8 @@ void reconnect() {
       Serial.println("conectado");
       // Uma vez conectado, publique um anúncio...
       client.publish("exterior/iluminacao", "Publicando Mensagens, ESP32 CENTRO DE MEMORIA");
+      // Inscricao no topico de acendimento manual da lampada
+      client.subscribe("exterior/ligalampada");
     } else {
       Serial.print("falha, codigo=");
       Serial.print(client.state());
@@ -139,4 +180,6 @@ void loop() {
     Serial.println(mensagem);
     client.publish("exterior/iluminacao", mensagem);
   }
+
+  
 }
