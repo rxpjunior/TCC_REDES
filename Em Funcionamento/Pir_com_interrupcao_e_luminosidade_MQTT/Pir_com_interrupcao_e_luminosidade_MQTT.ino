@@ -35,7 +35,8 @@ const int sensorLuminosidade = 34; //Pino que faz leitura Fotoresistor (luminosi
 // Temporizador da Iluminacao: variáveis auxiliares
 unsigned long momentoAtual = millis();
 unsigned long momentoUltimoAcionamentoLampada = 0;
-boolean interrupcaoLampadaAcionada = false;
+boolean interrupcaoLampadaAcionada = false; // Controla se a interrupcao esta ou não acionada
+boolean lampadaAcionadaManualmente = false; //Verifica se a lampada foi acionada manualmente ou nao
 
 //Demais variaveis
 int luminosidade;
@@ -89,10 +90,8 @@ void setup_wifi() {
   Serial.println(ssid);
   WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED) 
-  {
+  while (WiFi.status() != WL_CONNECTED){
     WiFi.begin(ssid, password);
-    
     Serial.print(".");
     delay(5000);
   }
@@ -122,10 +121,12 @@ void callback(char* topic, byte* message, unsigned int length) {
     if(ligarLampada == "{1}"){
       Serial.println("ligado");
       digitalWrite(lampada, HIGH);
+      lampadaAcionadaManualmente = true;
     }
     else if(ligarLampada == "{0}"){
       Serial.println("desligado");
       digitalWrite(lampada, LOW);
+      lampadaAcionadaManualmente = false;
     }
   }
 }
@@ -136,14 +137,14 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Tentando conexão com o MQTT...");
     // Tentando conectar
-    if (client.connect("ESP32Client")) 
-    {
+    if (client.connect("ESP32Client")){
       Serial.println("conectado");
       // Uma vez conectado, publique um anúncio...
       client.publish("exterior/iluminacao", "Publicando Mensagens, ESP32 CENTRO DE MEMORIA");
       // Inscricao no topico de acendimento manual da lampada
       client.subscribe("exterior/ligalampada");
-    } else {
+    } 
+    else {
       Serial.print("falha, codigo=");
       Serial.print(client.state());
       Serial.println(" tentando novamente em 5 segundos");
@@ -162,16 +163,19 @@ void loop() {
   // Desliga a lampada depois do numero de segundos definidos na variavel tempoAcendimentoLampada
   if(interrupcaoLampadaAcionada && (momentoAtual - momentoUltimoAcionamentoLampada > (tempoAcendimentoLampada*1000))) {
     Serial.println("SEM DETECÇÃO DE MOVIMENTO...");
-    digitalWrite(lampada, LOW);
     interrupcaoLampadaAcionada = false;
-  }
+    //Apagara a lampada apenas e ela nao foi acionada manualmente
+    if(!lampadaAcionadaManualmente){
+      digitalWrite(lampada, LOW);
+    }
+ }
   if (!client.connected()) {
     reconnect();
   }
   client.loop();
-  //////////////////////////////////////////////////////
-  
+    
   ////////////BLOCO REFERENTE AO ENVIO DA MENSAGEM MQTT REFERENTE A LUMINOSIDADE////////////
+  //Verifica se ja se passou o intervalo de envio de mensagens e se sim evia
   if (momentoAtual - ultimaMensagemMqqtLampada > tempoEnvioDadosSensorPresenca*1000) {
     ultimaMensagemMqqtLampada = momentoAtual;
     valor = digitalRead(lampada); // Le o valor do pino de acionamento do rele, se 0 desligado, se 1 ligado
@@ -180,6 +184,5 @@ void loop() {
     Serial.println(mensagem);
     client.publish("exterior/iluminacao", mensagem);
   }
-
   
 }
