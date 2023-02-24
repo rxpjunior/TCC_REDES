@@ -179,7 +179,14 @@ void loop() {
   if (momentoAtual - ultimaMensagemMqqtLampada > tempoEnvioDadosSensorPresenca*1000) {
     ultimaMensagemMqqtLampada = momentoAtual;
     valor = digitalRead(lampada); // Le o valor do pino de acionamento do rele, se 0 desligado, se 1 ligado
-    snprintf (mensagem, 75, "Iluminacao: #%ld", valor);
+  String aux;
+  if (valor == 1){
+    aux = "Ligado";   
+  }
+  else{
+    aux = "Desligado";
+  }
+    snprintf (mensagem, 75, "Iluminacao: %s", aux);
     Serial.print("Publicando mensagem:  ");
     Serial.println(mensagem);
     client.publish("exterior/iluminacao", mensagem);
