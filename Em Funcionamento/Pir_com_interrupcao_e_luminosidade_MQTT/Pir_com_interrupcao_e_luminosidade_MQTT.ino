@@ -17,8 +17,8 @@
 #include <PubSubClient.h>
 #include <WiFi.h> 
 
-const char* ssid = "RDL2";
-const char* password = "Bobo31*A*B";
+const char* ssid = "REDETESTE";
+const char* password = "Tatanka*2000";
 const char* mqtt_server = "192.168.18.40"; //Broker local rodando em Debian - allow_anonymous true e listener 1883 0.0.0.0 
 const int   mqtt_port = 1883;
 
