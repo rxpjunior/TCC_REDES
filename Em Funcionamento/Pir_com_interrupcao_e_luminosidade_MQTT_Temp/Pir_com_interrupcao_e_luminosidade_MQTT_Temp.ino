@@ -31,16 +31,16 @@ boolean lampadaAcionadaManualmente = false; //Verifica se a lampada foi acionada
 int luminosidade;
 long ultimaMensagemMqqtLampada = 0;
 char mensagem[50];
-int valor;
+int valorPinIluminacao; //Para verificar se o pino de iluminacao está ligado ou desligado
 
 //////////DEFINIÇÕES PARA A UTILIZAÇÃO DO SENSOR DE UMIDADE
-
 #define intervaloMonitoramentoUmidade 5 //Intervalo para leitura do sensor de umidade em segundos
 #define DHTPIN 4 //Pino de leitura do DHT
 #define DHTTYPE DHT22
 #define RELAYPIN 15 //Pino do Rele de acionamento do desumidificador 
 DHT dht(DHTPIN, DHTTYPE);
 unsigned long tempoAnteriorLeituraUmidade=0; //Variavel auxiliar para contar o tempo para verificação da umidade
+int valorPinDesumidificacao;
 
 //////////DEFINIÇÕES DE REDE E MQTT
 const char* ssid = "REDETESTE";
@@ -188,9 +188,9 @@ void loop() {
   //Verifica se ja se passou o intervalo de envio de mensagens e se sim evia
   if (momentoAtual - ultimaMensagemMqqtLampada > tempoEnvioDadosSensorPresenca*1000) {
     ultimaMensagemMqqtLampada = momentoAtual;
-    valor = digitalRead(lampada); // Le o valor do pino de acionamento do rele, se 0 desligado, se 1 ligado
+    valorPinIluminacao = digitalRead(lampada); // Le o valorPinIluminacao do pino de acionamento do rele, se 0 desligado, se 1 ligado
   String aux;
-  if (valor == 1){
+  if (valorPinIluminacao == 1){
     aux = "Ligado";   
   }
   else{
