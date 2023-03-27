@@ -37,7 +37,7 @@ int valorPinIluminacao; //Para verificar se o pino de iluminacao está ligado ou
 #define intervaloMonitoramentoUmidade 5 //Intervalo para leitura do sensor de umidade em segundos
 #define DHTPIN 4 //Pino de leitura do DHT
 #define DHTTYPE DHT22
-#define RELAYPIN 15 //Pino do Rele de acionamento do desumidificador 
+#define desumidificador 15 //Pino do Rele de acionamento do desumidificador 
 DHT dht(DHTPIN, DHTTYPE);
 unsigned long tempoAnteriorLeituraUmidade=0; //Variavel auxiliar para contar o tempo para verificação da umidade
 int valorPinDesumidificacao;
@@ -69,9 +69,7 @@ void IRAM_ATTR detectaMovimento() {
 
 void setup() {
   Serial.begin(115200);
-
   setup_wifi();
-  
   client.setServer(mqtt_server, mqtt_port);
  
   // Sensor de movimento configurado para modo INPUT_PULLUP
@@ -87,13 +85,14 @@ void setup() {
   client.setCallback(callback);
 
   //Inicializando o DHT
-  pinMode(RELAYPIN, OUTPUT);
+  pinMode(desumidificador, OUTPUT);
   dht.begin();
 }
 
 //Funcao de conexao com a rede
 void setup_wifi() {
   delay(10);
+  
   // Inciando a conexao com a rede
   Serial.println();
   Serial.print("Conectando a ");
@@ -117,7 +116,6 @@ void callback(char* topic, byte* message, unsigned int length) {
   Serial.print(topic);
   Serial.print(". Mensagem: ");
   String ligarLampada;
-  
   for (int i = 0; i < length; i++) {
     Serial.print((char)message[i]);
     ligarLampada += (char)message[i];
@@ -216,17 +214,36 @@ void loop() {
     Serial.print(" %\t");
     // Liga ou desliga o relê com base na umidade
     if (humidity > 56) {
-      digitalWrite(RELAYPIN, HIGH); // Ligar o relê
+      digitalWrite(desumidificador, HIGH); // Ligar o relê
       Serial.println("Desumidificador ligado...");
       }
     else if (humidity < 55) {
-      digitalWrite(RELAYPIN, LOW); // Desligar o relê
+      digitalWrite(desumidificador, LOW); // Desligar o relê
       Serial.println("Desumidificador desligado...");
     } 
     else {
       Serial.println("Umidade estável.");
     }
     tempoAnteriorLeituraUmidade = momentoAtual;
+
+    valorPinDesumidificacao = digitalRead(desumidificador); // Le o valorPinDesumidificacao do pino de acionamento do rele, se 0 desligado, se 1 ligado
+  
+  ////////////BLOCO REFERENTE AO ENVIO DA MENSAGEM MQTT REFERENTE A UMIDADE//////////// 
+    String aux;
+    aux = String(humidity);
+    snprintf (mensagem, 75, "Umidade: %s", aux);
+    Serial.print("Publicando mensagem:  ");
+    Serial.println(mensagem);
+    client.publish("interior/umidade", mensagem);
+    if (valorPinDesumidificacao == 1){
+      aux = "Ligado";   
+    }
+    else{
+      aux = "Desligado";
+    }
+      snprintf (mensagem, 75, "Desumidificador: %s", aux);
+      Serial.print("Publicando mensagem:  ");
+      Serial.println(mensagem);
+      client.publish("interior/desumidificacao", mensagem);
   }
 }
-  
