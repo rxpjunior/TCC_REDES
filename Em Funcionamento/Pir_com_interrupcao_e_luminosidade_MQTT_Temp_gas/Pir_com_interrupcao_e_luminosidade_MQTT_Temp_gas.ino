@@ -263,19 +263,18 @@ void loop() {
   /////////////////BLOCO REFERENTE A LEITURA DO SENSOR DE GASES//////////////
   if(momentoAtual - tempoAnteriorLeituraFumaca > (intervaloMonitoramentoFumaca * 1000)){
     int leituraSensorGasAnalogico = analogRead(gas_analogico_pino);
-    int leituraSensorGasDigital = analogRead(gas_digital_pino);
+    int leituraSensorGasDigital = digitalRead(gas_digital_pino);
     Serial.print("Leitura analogica do sensor de gas: ");
     Serial.println(leituraSensorGasAnalogico);
     Serial.print("Leitura digital do sensor de gas: ");
     Serial.println(leituraSensorGasDigital);
   
-    if(leituraSensorGasAnalogico > 1000){
-      (leituraSensorGasDigital > 1);
+    if(leituraSensorGasAnalogico > 2000){
       Serial.println("Gás Detectado");
       digitalWrite(sirene, HIGH);
     }
     else{
-      Serial.println("sem presença de gás");
+      Serial.println("Sem presença de gás");
       digitalWrite(sirene, LOW);
     }
     tempoAnteriorLeituraFumaca = momentoAtual;
