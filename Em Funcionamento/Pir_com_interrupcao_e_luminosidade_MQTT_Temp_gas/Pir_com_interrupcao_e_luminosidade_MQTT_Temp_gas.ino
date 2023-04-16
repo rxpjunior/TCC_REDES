@@ -53,7 +53,7 @@ int valorPinSirene;
 //////////DEFINIÇÕES DE REDE E MQTT
 const char* ssid = "REDETESTE";
 const char* password = "Tatanka*2000";
-const char* mqtt_server = "192.168.18.40"; //Broker local rodando em Debian - allow_anonymous true e listener 1883 0.0.0.0 
+const char* mqtt_server = "192.168.1.196"; //Broker local rodando em Debian - allow_anonymous true e listener 1883 0.0.0.0 
 const int   mqtt_port = 1883;
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -279,5 +279,23 @@ void loop() {
     }
     tempoAnteriorLeituraFumaca = momentoAtual;
     valorPinSirene = digitalRead(sirene); // Le o valorPinSirene do pino de acionamento do rele, se 0 desligado, se 1 ligado
+
+  ////////////BLOCO REFERENTE AO ENVIO DA MENSAGEM MQTT REFERENTE AOS GASES//////////// 
+    String aux;
+    aux = String(leituraSensorGasAnalogico);
+    snprintf (mensagem, 75, "Fumaça (PPM): %s", aux);
+    Serial.print("Publicando mensagem:  ");
+    Serial.println(mensagem);
+    client.publish("interior/fumaca", mensagem);
+    if (valorPinSirene == 1){
+      aux = "Ligado";   
+    }
+    else{
+      aux = "Desligado";
+    }
+      snprintf (mensagem, 75, "Sirene: %s", aux);
+      Serial.print("Publicando mensagem:  ");
+      Serial.println(mensagem);
+      client.publish("interior/sirene", mensagem); 
   }  
 }
