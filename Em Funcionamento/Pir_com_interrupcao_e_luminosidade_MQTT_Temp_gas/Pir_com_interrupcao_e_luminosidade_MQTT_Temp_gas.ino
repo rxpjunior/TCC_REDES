@@ -51,9 +51,9 @@ unsigned long tempoAnteriorLeituraFumaca=0; //Variavel auxiliar para contar o te
 int valorPinSirene;
 
 //////////DEFINIÇÕES DE REDE E MQTT
-const char* ssid = "REDETESTE";
-const char* password = "Tatanka*2000";
-const char* mqtt_server = "192.168.1.196"; //Broker local rodando em Debian - allow_anonymous true e listener 1883 0.0.0.0 
+const char* ssid = "DGP2.4";
+const char* password = "BolachaXP*A*B";
+const char* mqtt_server = "192.168.18.40"; //Broker local rodando em Debian - allow_anonymous true e listener 1883 0.0.0.0 
 const int   mqtt_port = 1883;
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -269,7 +269,7 @@ void loop() {
     Serial.print("Leitura digital do sensor de gas: ");
     Serial.println(leituraSensorGasDigital);
   
-    if(leituraSensorGasAnalogico > 2000){
+    if(leituraSensorGasAnalogico > 1500){
       Serial.println("Gás Detectado");
       digitalWrite(sirene, HIGH);
     }
@@ -282,8 +282,13 @@ void loop() {
 
   ////////////BLOCO REFERENTE AO ENVIO DA MENSAGEM MQTT REFERENTE AOS GASES//////////// 
     String aux;
-    aux = String(leituraSensorGasAnalogico);
-    snprintf (mensagem, 75, "Fumaça (PPM): %s", aux);
+    if(leituraSensorGasAnalogico < 1500){
+      aux = "OK";
+    }
+    else{
+      aux = "DETECTADO";
+    }
+    snprintf (mensagem, 75, "Particulas: %s", aux);
     Serial.print("Publicando mensagem:  ");
     Serial.println(mensagem);
     client.publish("interior/fumaca", mensagem);
