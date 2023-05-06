@@ -21,9 +21,9 @@
 #define tempoAcendimentoLampada 10 //Tempo de acendimento da lampada em segundos
 #define tempoEnvioDadosSensorPresenca 2 //Intervalo de envio dos dados MQTT do sensor de presenca em segundos
 // Definição dos pinos
-const int sensorMovimento = 39; //Pino que faz leitura Sensor Movimento
-const int lampada = 26; //Pino de acionamento Rele Lampada
-const int sensorLuminosidade = 34; //Pino que faz leitura Fotoresistor (luminosidade)
+const int sensorMovimento = 39; //Pino VN que faz leitura Sensor Movimento
+const int lampada = 26; //Pino D26 de acionamento Rele Lampada
+const int sensorLuminosidade = 34; //Pino D34 que faz leitura Fotoresistor (luminosidade)
 unsigned long momentoAtual = millis(); //Momento atual apurado a cada iteração
 unsigned long momentoUltimoAcionamentoLampada = 0;
 boolean interrupcaoLampadaAcionada = false; // Controla se a interrupcao esta ou não acionada
@@ -35,18 +35,18 @@ int valorPinIluminacao; //Para verificar se o pino de iluminacao está ligado ou
 
 //////////DEFINIÇÕES PARA A UTILIZAÇÃO DO SENSOR DE UMIDADE
 #define intervaloMonitoramentoUmidade 5 //Intervalo para leitura do sensor de umidade em segundos
-#define DHTPIN 4 //Pino de leitura do DHT
+#define DHTPIN 4 //Pino D4 de leitura do DHT
 #define DHTTYPE DHT22
-#define desumidificador 15 //Pino do Rele de acionamento do desumidificador 
+#define desumidificador 15 //Pino D15 do Rele de acionamento do desumidificador 
 DHT dht(DHTPIN, DHTTYPE);
 unsigned long tempoAnteriorLeituraUmidade=0; //Variavel auxiliar para contar o tempo para verificação da umidade
 int valorPinDesumidificacao;
 
 /////////DEFINIÇÕES PARA UTILIZAÇÃO DO SENSOR DE GASES
 #define intervaloMonitoramentoFumaca 5 //Intervalo para leitura do sensor de gas em segundos
-const int gas_analogico_pino = 35;
-const int gas_digital_pino = 2;
-const int sirene = 18;
+const int gas_analogico_pino = 35; //Pino D35 para leitura analogica do gás
+const int gas_digital_pino = 2; // Pino D2 para leitura digital do gás
+const int sirene = 18; //Pino D18 para disparar a sirene
 unsigned long tempoAnteriorLeituraFumaca=0; //Variavel auxiliar para contar o tempo para verificação da umidade
 int valorPinSirene;
 
